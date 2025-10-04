@@ -1,0 +1,27 @@
+name: WineQualityClassifier
+
+conda_env: conda.yaml
+
+entry_points:
+  main:
+    parameters:
+      data_path: {type: path, default: "data/wine.csv"}
+      test_size: {type: float, default: 0.2}
+      n_estimators: {type: int, default: 100}
+      max_depth: {type: int, default: 5}
+      min_samples_split: {type: int, default: 2}
+      random_state: {type: int, default: 42}
+    command: "python train.py --data-path {data_path} --test-size {test_size} --n-estimators {n_estimators} --max-depth {max_depth} --min-samples-split {min_samples_split} --random-state {random_state}"
+  
+  evaluate:
+    parameters:
+      model_path: {type: path, default: "models/model.pkl"}
+      data_path: {type: path, default: "data/wine.csv"}
+    command: "python evaluate.py --model-path {model_path} --data-path {data_path}"
+  
+  predict:
+    parameters:
+      model_path: {type: path, default: "models/model.pkl"}
+      input_data: {type: path, default: "data/test_input.csv"}
+      output_path: {type: path, default: "predictions.csv"}
+    command: "python predict.py --model-path {model_path} --input-data {input_data} --output-path {output_path}"

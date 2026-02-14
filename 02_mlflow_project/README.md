@@ -1,135 +1,119 @@
-# MLflow Project Example: Wine Quality Classifier
+# MLflow Project: Wine Quality Classifier
 
-This MLflow Project demonstrates how to structure a reproducible machine learning project with proper entry points, environment management, and CLI parameters.
+A reproducible ML project that demonstrates MLflow Projects — entry points, environment management, and CLI parameters.
 
-## 📋 Project Structure
+## Project Structure
 
 ```
-mlflow_project_example/
-├── MLproject              # MLflow project configuration
-├── conda.yaml            # Conda environment specification
-├── train.py              # Training script
-├── evaluate.py           # Evaluation script
-├── predict.py            # Prediction script
-├── data/                 # Data directory (created automatically)
-└── README.md            # This file
+02_mlflow_project/
+├── MLproject          # Project configuration (entry points + params)
+├── conda.yaml         # Conda environment specification
+├── train.py           # Training script (logs to MLflow + saves model locally)
+├── evaluate.py        # Evaluation script (classification report)
+├── predict.py         # Prediction script (batch inference → CSV)
+├── data/              # Dataset directory (created automatically)
+│   └── wine.csv
+└── README.md
 ```
 
-## 🎯 What is an MLflow Project?
+## What is an MLflow Project?
 
-An MLflow Project is a format for packaging data science code in a reusable and reproducible way. It includes:
+An MLflow Project packages ML code so it can be reproduced anywhere:
 
-- **MLproject file**: Defines entry points, parameters, and environment
-- **Environment specification**: `conda.yaml` or `requirements.txt`
-- **Code**: Python scripts with CLI interfaces
+| Component | Purpose |
+|-----------|---------|
+| **MLproject** | Declares entry points, parameters, and the environment |
+| **conda.yaml** | Pins Python & library versions for reproducibility |
+| **Scripts** | Python files with Click CLI interfaces |
 
-## 🚀 Running the Project
+## Quick Start
 
 ### Prerequisites
 
-Make sure you have MLflow and conda installed:
 ```bash
-pip install mlflow
+pip install mlflow scikit-learn pandas matplotlib seaborn click joblib
 ```
 
-### 1. Training the Model (Main Entry Point)
+### Option A — Run scripts directly
 
-Run the training script with default parameters:
 ```bash
-mlflow run . -e main
+cd 02_mlflow_project
+
+python train.py                          # train with defaults
+python train.py --n-estimators 200       # custom hyper-parameters
+python evaluate.py                       # evaluate the trained model
+python predict.py                        # batch predictions → predictions.csv
 ```
 
-Run with custom parameters:
+### Option B — Run via `mlflow run`
+
 ```bash
-mlflow run . -e main -P n_estimators=200 -P max_depth=10
+# Use --env-manager=local to skip creating a new conda env
+mlflow run . -e main     --env-manager=local
+mlflow run . -e evaluate --env-manager=local
+mlflow run . -e predict  --env-manager=local
 ```
 
-All available parameters:
+With custom parameters:
+
 ```bash
-mlflow run . -e main \
-  -P n_estimators=150 \
-  -P max_depth=8 \
+mlflow run . -e main --env-manager=local \
+  -P n_estimators=200 \
+  -P max_depth=10 \
   -P min_samples_split=5 \
-  -P test_size=0.25 \
-  -P random_state=42
+  -P test_size=0.25
 ```
 
-### 2. Evaluating the Model
+## Entry Points
 
-Evaluate a trained model:
+### 1. `main` — Training
+
+Trains a Random Forest classifier and logs everything to MLflow.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `data_path` | path | `data/wine.csv` | Training CSV (auto-created if missing) |
+| `test_size` | float | `0.2` | Fraction reserved for testing |
+| `n_estimators` | int | `100` | Number of trees |
+| `max_depth` | int | `5` | Maximum tree depth |
+| `min_samples_split` | int | `2` | Min samples to split a node |
+| `random_state` | int | `42` | Random seed |
+
+**Outputs:** `models/model.pkl`, confusion matrix PNG, feature importance PNG, MLflow run with metrics.
+
+### 2. `evaluate` — Evaluation
+
+Loads the saved model and prints a classification report.
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `model_path` | path | `models/model.pkl` |
+| `data_path` | path | `data/wine.csv` |
+
+### 3. `predict` — Batch Prediction
+
+Runs the model on input data and writes predictions to CSV.
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `model_path` | path | `models/model.pkl` |
+| `input_data` | path | `data/test_input.csv` (auto-created if missing) |
+| `output_path` | path | `predictions.csv` |
+
+## Viewing Results
+
 ```bash
-mlflow run . -e evaluate -P model_path=models/model.pkl
+mlflow ui
 ```
 
-Evaluate from MLflow Model Registry:
-```bash
-mlflow run . -e evaluate -P model_name=WineClassifier -P model_version=1
-```
+Open http://localhost:5000 to see experiment runs, parameters, metrics, and artifacts.
 
-### 3. Making Predictions
+## Key Concepts
 
-Make predictions with the trained model:
-```bash
-mlflow run . -e predict -P model_path=models/model.pkl
-```
+### MLproject File
 
-Custom input and output:
-```bash
-mlflow run . -e predict \
-  -P model_path=models/model.pkl \
-  -P input_data=data/test_input.csv \
-  -P output_path=my_predictions.csv
-```
-
-## 📊 Understanding the Entry Points
-
-### 1. `main` (Training)
-- **Purpose**: Train a Random Forest classifier
-- **Parameters**: 
-  - `n_estimators` (int): Number of trees
-  - `max_depth` (int): Maximum tree depth
-  - `min_samples_split` (int): Minimum samples to split
-  - `test_size` (float): Test set proportion
-  - `random_state` (int): Random seed
-- **Outputs**:
-  - Trained model saved to `models/model.pkl`
-  - MLflow run with metrics and artifacts
-  - Confusion matrix and feature importance plots
-
-### 2. `evaluate` (Evaluation)
-- **Purpose**: Evaluate model performance
-- **Parameters**:
-  - `model_path` (str): Path to saved model
-  - `model_name` (str): Model name in registry (optional)
-  - `model_version` (int): Model version (optional)
-- **Outputs**:
-  - Classification report
-  - Performance metrics
-
-### 3. `predict` (Prediction)
-- **Purpose**: Make predictions on new data
-- **Parameters**:
-  - `model_path` (str): Path to saved model
-  - `input_data` (str): Input CSV file
-  - `output_path` (str): Output CSV file
-- **Outputs**:
-  - Predictions saved to CSV file
-
-## 🎓 Teaching Points (Slide 13)
-
-### Why Use MLflow Projects?
-
-1. **Reproducibility**: Anyone can run your code with the same environment
-2. **Parameterization**: Easy to experiment with different parameters
-3. **Organization**: Clear structure with defined entry points
-4. **Portability**: Can run locally, on a server, or in the cloud
-
-### Key Concepts
-
-#### MLproject File
 ```yaml
 name: WineQualityClassifier
-
 conda_env: conda.yaml
 
 entry_points:
@@ -139,83 +123,46 @@ entry_points:
     command: "python train.py --n-estimators {n_estimators}"
 ```
 
-#### Environment Management
-The `conda.yaml` file ensures everyone uses the same package versions:
+### Environment Management
+
+`conda.yaml` pins the exact versions so anyone can reproduce the environment:
+
 ```yaml
 dependencies:
-  - python=3.9
-  - scikit-learn=1.0.2
-  - mlflow=2.8.0
+  - python=3.12
+  - scikit-learn>=1.5
+  - mlflow>=3.0
 ```
 
-#### CLI with Click
-Each script uses Click for clean command-line interfaces:
+### CLI with Click
+
+Each script uses Click for clean argument parsing:
+
 ```python
 @click.command()
-@click.option('--n-estimators', type=int, default=100)
+@click.option("--n-estimators", type=int, default=100)
 def train(n_estimators):
-    # Training code
+    ...
 ```
 
-## 🔄 Running from GitHub
-
-MLflow Projects can be run directly from Git repositories:
+## Running from a Git Repository
 
 ```bash
-mlflow run https://github.com/your-repo/mlflow-project \
-  -e main -P n_estimators=200
+mlflow run https://github.com/<user>/<repo> -e main -P n_estimators=200
 ```
 
-## 📈 Viewing Results
+## Exercise
 
-After running the project, view results in MLflow UI:
+1. Run the project with default parameters
+2. Try different values for `n_estimators` and `max_depth`
+3. Compare runs in the MLflow UI
+4. Evaluate the best model with the `evaluate` entry point
+5. Create custom input data and generate predictions
 
-```bash
-mlflow ui
-```
+## Troubleshooting
 
-Navigate to http://localhost:5000 to see:
-- Experiment runs
-- Parameters used
-- Metrics logged
-- Artifacts (plots, models)
-
-## 🔧 Advanced Usage
-
-### Running with Specific Experiment
-
-```bash
-mlflow run . -e main --experiment-name my-experiment
-```
-
-### Running Specific Git Commit
-
-```bash
-mlflow run . -v <commit-hash> -e main
-```
-
-### Running on Remote Server
-
-Configure backend and artifact stores in your environment, then:
-```bash
-mlflow run . -e main --backend kubernetes
-```
-
-## 📝 Exercise
-
-1. **Basic Run**: Run the project with default parameters
-2. **Parameter Tuning**: Try different values for `n_estimators` and `max_depth`
-3. **Compare Runs**: Use MLflow UI to compare different runs
-4. **Model Evaluation**: Use the evaluate entry point on your best model
-5. **Make Predictions**: Create custom input data and generate predictions
-
-## 🆘 Troubleshooting
-
-### Issue: Conda environment not found
-**Solution**: Make sure conda is installed and in your PATH
-
-### Issue: Module not found errors
-**Solution**: Delete `mlruns/` and `.conda/` folders, then run again
-
-### Issue: Model file not found
-**Solution**: Run the training entry point first before evaluate/predict
+| Problem | Solution |
+|---------|----------|
+| Conda env not found | Use `--env-manager=local` or install conda |
+| Module not found | Activate the right virtualenv / conda env first |
+| Model file not found | Run `train.py` before `evaluate.py` / `predict.py` |

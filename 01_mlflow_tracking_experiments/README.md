@@ -2,7 +2,7 @@
 
 This project demonstrates MLflow capabilities for learning ML experiment tracking
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### 1. Installation
 
@@ -30,7 +30,7 @@ mlflow ui
 
 Then open: http://localhost:5000
 
-## 📖 Learning Objectives
+## Learning Objectives
 
 ### Notebook 1: Basic Tracking
 - Set up MLflow experiments
@@ -63,7 +63,7 @@ Then open: http://localhost:5000
 - Promote models through stages (Staging → Production)
 - Deploy models from registry
 
-## 🎯 MLflow UI Features to Explore
+##  MLflow UI Features to Explore
 
 1. **Experiments View** - Compare runs side-by-side
 2. **Metrics Visualization** - Plot metrics across runs
@@ -103,7 +103,7 @@ After completing all notebooks, your MLflow UI will show:
 - Registered models in different stages
 - Complete audit trail of all experiments
 
-## 📝 Assignment Ideas
+##  Assignment Ideas
 
 1. Run all notebooks and screenshot your MLflow UI
 2. Create a new experiment with your own dataset
